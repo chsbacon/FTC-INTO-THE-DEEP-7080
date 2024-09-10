@@ -31,7 +31,7 @@ public class MeepMeepTesting {
                                 .build()
                 );
         Image img = null;
-        try { img = ImageIO.read(new File("<PATH TO IMAGE>")); }
+        try { img = ImageIO.read(new File("./MeepMeepTesting/src/main/java/com/example/meepmeeptesting/into-the-deep-dark.jpg")); }
         catch (IOException e) {}
 
         meepMeep.setBackground(img)
