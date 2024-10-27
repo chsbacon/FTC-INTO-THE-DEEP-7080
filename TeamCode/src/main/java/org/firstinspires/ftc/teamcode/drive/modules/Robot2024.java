@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -16,7 +18,7 @@ public class Robot2024 {
     public DriveController driveController = null;
     public DcMotorEx linearExtenderMotorL;
     public DcMotorEx linearExtenderMotorR;
-    public DcMotorEx forearmMotor;
+    public Servo clawServo;
     public ArmController armController = null;
     MecanumDrive2024 drive;
     Telemetry telemetry;
@@ -37,8 +39,7 @@ public class Robot2024 {
             linearExtenderMotorL.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
             linearExtenderMotorR = this.hardwareMap.get(DcMotorEx.class, "linearExtenderR"); //HW map declaration
             linearExtenderMotorR.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
-            forearmMotor = this.hardwareMap.get(DcMotorEx.class, "forearmMotor"); //HW map declaration
-            forearmMotor.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+            clawServo = this.hardwareMap.get(Servo.class, "clawServo"); //HW map declaration
         }
     }
     public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive){

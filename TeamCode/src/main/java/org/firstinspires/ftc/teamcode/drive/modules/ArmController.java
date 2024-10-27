@@ -21,6 +21,9 @@ public class ArmController {
     public final int LINEAR_MIN = 0;
     public final int LINEAR_MAX = 2500;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    private boolean clawOpen = false;
+    private final int openClawDeg = 90; // need to adjust these in testing
+    private final int closedClawDeg = 120;
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
@@ -37,6 +40,8 @@ public class ArmController {
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
         doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
+        doClawControl(gamepad2);
+
         /*
         if(gamepad2.a){
             armTargetLocation = ArmLocation.Intake;
@@ -102,6 +107,21 @@ public class ArmController {
         telemetry.addData("left linearT: ", robot.linearExtenderMotorL.getTargetPosition());
         loopTimer.reset();
     }
+
+    public void doClawControl(Gamepad gamepad2){
+
+        // this abstraction seems pointless from an efficentcy standpoint why not run the check in the main loop?
+        if (gamepad2.left_bumper) {
+            clawOpen = !clawOpen;
+            if (clawOpen) {
+                robot.clawServo.setPosition(openClawDeg);
+            } else {
+                robot.clawServo.setPosition(closedClawDeg);
+            }
+        }
+    }
+
+
     public void doManualLinear(Gamepad gamepad2, boolean allowPastEndstops){
         int newTargetPosition = robot.linearExtenderMotorL.getTargetPosition();
         if (Math.abs(gamepad2.left_stick_y) > .15){
