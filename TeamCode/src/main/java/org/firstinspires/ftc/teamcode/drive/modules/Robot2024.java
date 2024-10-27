@@ -16,6 +16,7 @@ public class Robot2024 {
     public DriveController driveController = null;
     public DcMotorEx linearExtenderMotorL;
     public DcMotorEx linearExtenderMotorR;
+    public DcMotorEx forearmMotor;
     public ArmController armController = null;
     MecanumDrive2024 drive;
     Telemetry telemetry;
@@ -36,6 +37,8 @@ public class Robot2024 {
             linearExtenderMotorL.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
             linearExtenderMotorR = this.hardwareMap.get(DcMotorEx.class, "linearExtenderR"); //HW map declaration
             linearExtenderMotorR.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+            forearmMotor = this.hardwareMap.get(DcMotorEx.class, "forearmMotor"); //HW map declaration
+            forearmMotor.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
         }
     }
     public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive){
