@@ -20,6 +20,8 @@ public class ArmController {
     private Telemetry telemetry;
     public final int LINEAR_MIN = 0;
     public final int LINEAR_MAX = 2500;
+    public final int FOREARM_MIN = 0;
+    public final int FOREARM_MAX = 2*90;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean clawOpen = false;
     private final int openClawDeg = 90; // need to adjust these in testing
@@ -36,10 +38,16 @@ public class ArmController {
         robot.linearExtenderMotorR.setTargetPosition(0);
         robot.linearExtenderMotorR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.linearExtenderMotorR.setPower(1);
+
+        robot.forearmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.forearmMotor.setTargetPosition(0);
+        robot.forearmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.forearmMotor.setPower(1);
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
         doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
+        doManualForearm(gamepad2, gamepad2.start && gamepad2.left_bumper);
         doClawControl(gamepad2);
 
         /*
@@ -121,6 +129,19 @@ public class ArmController {
         }
     }
 
+    public void doManualForearm(Gamepad gamepad2, boolean allowPastEndstops) {
+        int newTargetPosition = robot.forearmMotor.getTargetPosition();
+        if (gamepad2.a) {
+            newTargetPosition += 2;
+        }
+        if (gamepad2.b) {
+            newTargetPosition -= 2;
+        }
+        if (!allowPastEndstops) {
+            newTargetPosition = (int) clamp(newTargetPosition, FOREARM_MIN, FOREARM_MAX);
+        }
+        robot.forearmMotor.setTargetPosition(newTargetPosition);
+    }
 
     public void doManualLinear(Gamepad gamepad2, boolean allowPastEndstops){
         int newTargetPosition = robot.linearExtenderMotorL.getTargetPosition();
