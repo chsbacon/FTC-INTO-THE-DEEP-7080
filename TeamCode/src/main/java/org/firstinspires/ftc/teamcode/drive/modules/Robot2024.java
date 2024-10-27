@@ -42,9 +42,6 @@ public class Robot2024 {
             clawServo = this.hardwareMap.get(Servo.class, "clawServo"); //HW map declaration
         }
     }
-    public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive){
-        this(opMode, drive, false, false);
-    }
     public void onOpmodeInit(){
         //drive.imu.resetYaw();
         if (driveController != null) {
