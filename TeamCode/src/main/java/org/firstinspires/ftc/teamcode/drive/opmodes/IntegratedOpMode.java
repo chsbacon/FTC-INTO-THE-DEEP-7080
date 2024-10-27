@@ -14,7 +14,7 @@ public class IntegratedOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         MecanumDrive2024 drive = new MecanumDrive2024(hardwareMap);
         drive.imu.resetYaw();
-        Robot2024 robot = new Robot2024(this, drive, true);
+        Robot2024 robot = new Robot2024(this, drive, true, true);
         robot.onOpmodeInit();
         waitForStart();
         while (opModeIsActive()){

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.drive.modules;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -12,12 +14,15 @@ public class Robot2024 {
     LinearOpMode opMode;
     public HardwareMap hardwareMap;
     public DriveController driveController = null;
+    public DcMotorEx linearExtenderMotorL;
+    public DcMotorEx linearExtenderMotorR;
+    public ArmController armController = null;
     MecanumDrive2024 drive;
     Telemetry telemetry;
     WebcamName webcam;
     public boolean demoMode = false;
 
-    public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive, boolean doDriveController){
+    public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive, boolean doDriveController, boolean doArmController){
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.drive = drive;
@@ -25,9 +30,16 @@ public class Robot2024 {
         if (doDriveController){
             driveController = new DriveController();
         }
+        if (doArmController) {
+            armController = new ArmController();
+            linearExtenderMotorL = this.hardwareMap.get(DcMotorEx.class, "linearExtenderL"); //HW map declaration
+            linearExtenderMotorL.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+            linearExtenderMotorR = this.hardwareMap.get(DcMotorEx.class, "linearExtenderR"); //HW map declaration
+            linearExtenderMotorR.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+        }
     }
     public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive){
-        this(opMode, drive, false);
+        this(opMode, drive, false, false);
     }
     public void onOpmodeInit(){
         //drive.imu.resetYaw();
@@ -36,10 +48,18 @@ public class Robot2024 {
             this.telemetry.update();
             driveController.onOpmodeInit(this, this.drive, this.telemetry);
         }
+        if (armController != null){
+            this.telemetry.log().add("initting arm...");
+            this.telemetry.update();
+            armController.onOpmodeInit(this, this.telemetry);
+        }
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
         if (driveController != null){
             driveController.doLoop(gamepad1, gamepad2);
+        }
+        if (armController != null){
+            armController.doLoop(gamepad1, gamepad2);
         }
     }
 
