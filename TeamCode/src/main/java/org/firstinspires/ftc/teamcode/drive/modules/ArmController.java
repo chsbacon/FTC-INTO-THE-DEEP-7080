@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.modules;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -9,7 +7,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.util.Encoder;
+
+import java.util.HashMap;
 
 public class ArmController {
     private Robot2024 robot;
@@ -31,6 +30,16 @@ public class ArmController {
     private boolean clawOpen = false;
     private final int openClawDeg = 90; // need to adjust these in testing
     private final int closedClawDeg = 120;
+    private enum armLevels {
+        HANG,
+        LOWBASKET,
+        HIGHBASKET,
+        LOWBAR,
+        HIGHBAR,
+        INTAKE
+
+    }
+    private final HashMap<armLevels, int[]> armPresets = new HashMap<armLevels, int[]>();
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
@@ -45,9 +54,17 @@ public class ArmController {
 
         robot.forearmServoL.setPower(0);
         robot.forearmServoR.setPower(0);
+
+        armPresets.put(armLevels.HANG, new int[]{0, 0});
+        armPresets.put(armLevels.LOWBASKET, new int[]{/*24.75",*/ 0});
+        armPresets.put(armLevels.HIGHBASKET, new int[]{/*43",*/ 0});
+        armPresets.put(armLevels.LOWBAR, new int[]{/*20",*/ 0});
+        armPresets.put(armLevels.HIGHBAR, new int[]{/*36",*/ 0});
+        armPresets.put(armLevels.INTAKE, new int[] {0, 90});
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
+        doArmPresets(gamepad2);
         doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
         //doClawControl(gamepad2);
         if(gamepad2.a) {
@@ -93,6 +110,9 @@ public class ArmController {
         telemetry.addData("right: linearT: ", robot.linearExtenderMotorL.getTargetPosition());
         telemetry.addData("encoder position", robot.forearmEncoder.getCurrentPosition());
         loopTimer.reset();
+    }
+    public void doArmPresets(Gamepad gamepad) {
+
     }
     /*
     public void doClawControl(Gamepad gamepad2){
