@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.hardware.MecanumDrive2024;
+import org.firstinspires.ftc.teamcode.util.Encoder;
 
 public class Robot2024 {
     LinearOpMode opMode;
@@ -42,13 +43,15 @@ public class Robot2024 {
             linearExtenderMotorL = this.hardwareMap.get(DcMotorEx.class, "linearExtenderL"); //HW map declaration
             linearExtenderMotorL.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
             linearExtenderMotorR = this.hardwareMap.get(DcMotorEx.class, "linearExtenderR"); //HW map declaration
-            linearExtenderMotorR.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+            linearExtenderMotorR.setDirection(DcMotorSimple.Direction.REVERSE); //Change after tests
             linearRetractor = this.hardwareMap.get(DcMotorEx.class, "retractor");
-            linearRetractor.setDirection(DcMotorSimple.Direction.REVERSE); //Change after tests
+            linearRetractor.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
             forearmServoL = this.hardwareMap.get(CRServo.class, "forearmServoL"); //HW map declaration
             forearmServoR = this.hardwareMap.get(CRServo.class, "forearmServoR"); //HW map declaration
-            forearmEncoder = this.hardwareMap.get(DcMotorEx.class, "forearmEncoder");
-            forearmEncoder.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+            forearmServoL.setDirection(DcMotorSimple.Direction.REVERSE);
+            forearmServoR.setDirection(DcMotorSimple.Direction.FORWARD);
+            forearmEncoder = this.hardwareMap.get(DcMotorEx.class,"forearmEncoder");
+            forearmEncoder.setDirection(DcMotorSimple.Direction.FORWARD);
             //clawServo = this.hardwareMap.get(Servo.class, "claw"); //HW map declaration
         }
     }
