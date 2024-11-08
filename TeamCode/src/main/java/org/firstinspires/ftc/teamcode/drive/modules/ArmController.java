@@ -30,15 +30,6 @@ public class ArmController {
     private boolean clawOpen = false;
     private final int openClawDeg = 90; // need to adjust these in testing
     private final int closedClawDeg = 120;
-    private enum armLevels {
-        HANG,
-        LOWBASKET,
-        HIGHBASKET,
-        LOWBAR,
-        HIGHBAR,
-        INTAKE
-
-    }
     private final HashMap<armLevels, int[]> armPresets = new HashMap<armLevels, int[]>();
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
@@ -55,12 +46,12 @@ public class ArmController {
         robot.forearmServoL.setPower(0);
         robot.forearmServoR.setPower(0);
 
-        armPresets.put(armLevels.HANG, new int[]{0, 0});
-        armPresets.put(armLevels.LOWBASKET, new int[]{/*24.75",*/ 0});
-        armPresets.put(armLevels.HIGHBASKET, new int[]{/*43",*/ 0});
-        armPresets.put(armLevels.LOWBAR, new int[]{/*20",*/ 0});
-        armPresets.put(armLevels.HIGHBAR, new int[]{/*36",*/ 0});
-        armPresets.put(armLevels.INTAKE, new int[] {0, 90});
+        armPresets.put("hang", new int[]{0, 0});
+        armPresets.put("lowBasket", new int[]{/*24.75",*/ 0});
+        armPresets.put("highBasket", new int[]{/*43",*/ 0});
+        armPresets.put("lowBar", new int[]{/*20",*/ 0});
+        armPresets.put("highBar", new int[]{/*36",*/ 0});
+        armPresets.put("intake", new int[] {0, 90});
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
