@@ -94,21 +94,13 @@ public class ArmController {
         telemetry.addData("encoder position", robot.forearmEncoder.getCurrentPosition());
         loopTimer.reset();
     }
-    /*
-    public void doClawControl(Gamepad gamepad2){
-
-        // this abstraction seems pointless from an efficentcy standpoint why not run the check in the main loop?
-        // answer: so that we can access it in autonomous, eliminating the need for a redundant method
-        if (gamepad2.left_bumper) {
-            clawOpen = !clawOpen;
-            if (clawOpen) {
-                robot.clawServo.setPosition(openClawDeg);
-            } else {
-                robot.clawServo.setPosition(closedClawDeg);
-            }
+    public void doClawControl(boolean clawOpen){
+        if (clawOpen) {
+            robot.clawServo.setPosition(openClawDeg);
+        } else {
+            robot.clawServo.setPosition(closedClawDeg);
         }
     }
-    */
     public void doManualForearm(Gamepad gamepad2) {
         if (gamepad2.a) {
             robot.forearmServoL.setDirection(DcMotorSimple.Direction.FORWARD);
