@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class ArmController {
     private Robot2024 robot;
@@ -18,19 +20,24 @@ public class ArmController {
     public final int LINEAR_MAX = 5580;
     public final int FOREARM_MIN = 0;
     public final int FOREARM_MAX = 2*90;
-    public final int Intake = 500;
-    public final int LowBasket = 1000;
-    public final int HighBasket = LINEAR_MAX;
-    public final int LowSub = 1000;
-    public final int HighSub = 4000;
-    public final int Hang = LowSub+800;
     public final int Margin = 100; //Margin for forearm
     private final int EncoderTPR = 8192;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean clawOpen = false;
     private final int openClawDeg = 90; // need to adjust these in testing
     private final int closedClawDeg = 120;
-    private final HashMap<armLevels, int[]> armPresets = new HashMap<armLevels, int[]>();
+    public enum armStates {
+        ZERO,
+        HANG,
+        LOWBASKET,
+        HIGHBASKET,
+        LOWSUB,
+        HIGHSUB,
+        INTAKE
+
+    }
+    private armStates armState = armStates.ZERO;
+    private final HashMap<armStates, int[]> armPresets = new HashMap<>();
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
@@ -46,12 +53,13 @@ public class ArmController {
         robot.forearmServoL.setPower(0);
         robot.forearmServoR.setPower(0);
 
-        armPresets.put("hang", new int[]{0, 0});
-        armPresets.put("lowBasket", new int[]{/*24.75",*/ 0});
-        armPresets.put("highBasket", new int[]{/*43",*/ 0});
-        armPresets.put("lowBar", new int[]{/*20",*/ 0});
-        armPresets.put("highBar", new int[]{/*36",*/ 0});
-        armPresets.put("intake", new int[] {0, 90});
+        armPresets.put(armStates.ZERO, new int[]{LINEAR_MIN, 0});
+        armPresets.put(armStates.HANG, new int[]{1800, 0});
+        armPresets.put(armStates.LOWBASKET, new int[]{1000, 0});
+        armPresets.put(armStates.HIGHBASKET, new int[]{LINEAR_MAX, 0});
+        armPresets.put(armStates.LOWSUB, new int[]{1000, 0});
+        armPresets.put(armStates.HIGHSUB, new int[]{4000, 0});
+        armPresets.put(armStates.INTAKE, new int[] {500, 90});
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
@@ -103,7 +111,42 @@ public class ArmController {
         loopTimer.reset();
     }
     public void doArmPresets(Gamepad gamepad) {
-
+        if (gamepad.a) {
+            armState = armStates.LOWBASKET;
+            int[] positions = Objects.requireNonNull(armPresets.get(armState));
+            goToLinear(positions[0], 1.0);
+            goToForearm(positions[1], 1.0);
+        }
+        else if (gamepad.b) {
+            armState = armStates.HIGHBASKET;
+            int[] positions = Objects.requireNonNull(armPresets.get(armState));
+            goToLinear(positions[0], 1.0);
+            goToForearm(positions[1], 1.0);
+        }
+        else if (gamepad.x) {
+            armState = armStates.LOWSUB;
+            int[] positions = Objects.requireNonNull(armPresets.get(armState));
+            goToLinear(positions[0], 1.0);
+            goToForearm(positions[1], 1.0);
+        }
+        else if (gamepad.y) {
+            armState = armStates.HIGHSUB;
+            int[] positions = Objects.requireNonNull(armPresets.get(armState));
+            goToLinear(positions[0], 1.0);
+            goToForearm(positions[1], 1.0);
+        }
+        else if (gamepad.dpad_down) {
+            armState = armStates.ZERO;
+            int[] positions = Objects.requireNonNull(armPresets.get(armState));
+            goToLinear(positions[0], 1.0);
+            goToForearm(positions[1], 1.0);
+        }
+        else if (gamepad.dpad_up) {
+            armState = armStates.HANG;
+            int[] positions = Objects.requireNonNull(armPresets.get(armState));
+            goToLinear(positions[0], 1.0);
+            goToForearm(positions[1], 1.0);
+        }
     }
     /*
     public void doClawControl(Gamepad gamepad2){
