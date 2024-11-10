@@ -2,123 +2,114 @@ package org.firstinspires.ftc.teamcode.drive.modules;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.HashMap;
+
 public class ArmController {
-    public enum ArmLocation {
-        Intake,
-        LowBasket,
-        HighBasket,
-        LowSub,
-        HighSub,
-        Hang
-    }
     private Robot2024 robot;
     private Telemetry telemetry;
+    public int targetAngle = 0;
     public final int LINEAR_MIN = 0;
-    public final int LINEAR_MAX = 2500;
+    public final int LINEAR_MAX = 5580;
     public final int FOREARM_MIN = 0;
     public final int FOREARM_MAX = 2*90;
+    public final int Intake = 500;
+    public final int LowBasket = 1000;
+    public final int HighBasket = LINEAR_MAX;
+    public final int LowSub = 1000;
+    public final int HighSub = 4000;
+    public final int Hang = LowSub+800;
+    public final int Margin = 100; //Margin for forearm
+    private final int EncoderTPR = 8192;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean clawOpen = false;
-    private final int openClawDeg = 30; // need to adjust these in testing
-    private final int closedClawDeg = -5;
+    private final int openClawDeg = 90; // need to adjust these in testing
+    private final int closedClawDeg = 120;
+    private final HashMap<armLevels, int[]> armPresets = new HashMap<armLevels, int[]>();
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
-        robot.linearExtenderMotorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.linearExtenderMotorL.setTargetPosition(0);
-        robot.linearExtenderMotorL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.linearExtenderMotorL.setPower(1);
+        for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR,robot.linearRetractor}){
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setTargetPosition(0);
+            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motor.setPower(1);
+        }
+        robot.forearmEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.forearmEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        robot.linearExtenderMotorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.linearExtenderMotorR.setTargetPosition(0);
-        robot.linearExtenderMotorR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.linearExtenderMotorR.setPower(1);
+        robot.forearmServoL.setPower(0);
+        robot.forearmServoR.setPower(0);
 
-        robot.forearmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.forearmMotor.setTargetPosition(0);
-        robot.forearmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.forearmMotor.setPower(1);
+        armPresets.put("hang", new int[]{0, 0});
+        armPresets.put("lowBasket", new int[]{/*24.75",*/ 0});
+        armPresets.put("highBasket", new int[]{/*43",*/ 0});
+        armPresets.put("lowBar", new int[]{/*20",*/ 0});
+        armPresets.put("highBar", new int[]{/*36",*/ 0});
+        armPresets.put("intake", new int[] {0, 90});
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
+        doArmPresets(gamepad2);
         doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
-        doManualForearm(gamepad2, gamepad2.start && gamepad2.left_bumper);
-        doClawControl(gamepad2);
-
-        /*
-        if(gamepad2.a){
-            armTargetLocation = ArmLocation.Intake;
-            actionExecutor.setAction(new ParallelAction(
-                    //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_MIN),
-                    //new SleepAction(0.5),
-                    goToLinearHeightAction(LINEAR_MIN)
-            ));
+        //doClawControl(gamepad2);
+        if(gamepad2.a) {
+            targetAngle=0;
+            goToForearm(targetAngle,1); //Vertical, hopefully
         }
-        if(gamepad2.x){
-            armTargetLocation = ArmLocation.Hang;
-            actionExecutor.setAction(new ParallelAction(
-                    goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(FOREARM_VERTICAL)
-            ));
+        if(gamepad2.b) {
+            targetAngle=90;
+            goToForearm(targetAngle,1); //Forwards, hopefully
         }
-        if(gamepad2.b && !gamepad2.dpad_left){
-            armTargetLocation = ArmLocation.Score;
-            actionExecutor.setAction(new ParallelAction(
-                    //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(800),
-                    goToLinearHeightAction(LINEAR_MIN)
-            ));
+        if(gamepad2.x) {
+            targetAngle=-45;
+            goToForearm(targetAngle,1); //Backwards, hopefully
         }
-        if(gamepad2.y){
-            armTargetLocation = ArmLocation.Score;
-            actionExecutor.setAction(new ParallelAction(
-                    //goToLinearHeightAction(LINEAR_MAX),
-                    goToArmPositionAction(175),
-                    goToLinearHeightAction(LINEAR_MAX)
-            ));
+        if(gamepad2.dpad_up) {
+            goToLinear(5500, 1.0);
         }
-        if(gamepad2.back && gamepad2.start){
-            for(DcMotorEx motor: new DcMotorEx[]{robot.leftForearmMotor, robot.rightForearmMotor}){
-                motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            }
-            forearmPID.reset();
-            forearmPID.setSetPoint(0);
-            robot.linearExtenderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.linearExtenderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.linearExtenderMotor.setTargetPosition(0);
+        if(gamepad2.dpad_left) {
+            goToLinear(2000, 1.0);
         }
-
-
-        doArmControl();
-
-         */
-        if(gamepad2.back){
-            for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR}){
+        if(gamepad2.dpad_down) {
+            goToLinear(20, 1.0);
+        }
+        if((angleToTicks(targetAngle)-100 < robot.forearmEncoder.getCurrentPosition())
+                && (robot.forearmEncoder.getCurrentPosition() < angleToTicks(targetAngle) + 100)) { //if current position is within +-20 ticks of target
+            robot.forearmServoL.setPower(0);
+            robot.forearmServoR.setPower(0);
+        }
+        //doManualForearm(gamepad2);
+        if(gamepad2.back){ //Disable motors
+            for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR,robot.linearRetractor}){
                 motor.setPower(0);
             }
         } else {
             robot.linearExtenderMotorL.setPower(1);
             robot.linearExtenderMotorR.setPower(1);
+            robot.linearRetractor.setPower(1);
         }
 
-        telemetry.addData("left: LinearC: ", robot.linearExtenderMotorL.getCurrentPosition());
-        telemetry.addData("right: LinearC: ", robot.linearExtenderMotorR.getCurrentPosition());
-        telemetry.addData("left linearT: ", robot.linearExtenderMotorL.getTargetPosition());
-        telemetry.addData("left linearT: ", robot.linearExtenderMotorL.getTargetPosition());
+        telemetry.addData("left: linearC: ", robot.linearExtenderMotorL.getCurrentPosition());
+        telemetry.addData("right: linearC: ", robot.linearExtenderMotorR.getCurrentPosition());
+        telemetry.addData("left: linearT: ", robot.linearExtenderMotorL.getTargetPosition());
+        telemetry.addData("right: linearT: ", robot.linearExtenderMotorL.getTargetPosition());
+        telemetry.addData("encoder position", robot.forearmEncoder.getCurrentPosition());
         loopTimer.reset();
     }
+    public void doArmPresets(Gamepad gamepad) {
 
+    }
+    /*
     public void doClawControl(Gamepad gamepad2){
 
         // this abstraction seems pointless from an efficentcy standpoint why not run the check in the main loop?
+        // answer: so that we can access it in autonomous, eliminating the need for a redundant method
         if (gamepad2.left_bumper) {
             clawOpen = !clawOpen;
             if (clawOpen) {
@@ -128,21 +119,70 @@ public class ArmController {
             }
         }
     }
-
-    public void doManualForearm(Gamepad gamepad2, boolean allowPastEndstops) {
-        int newTargetPosition = robot.forearmMotor.getTargetPosition();
+    */
+    public void doManualForearm(Gamepad gamepad2) {
         if (gamepad2.a) {
-            newTargetPosition += 2;
+            robot.forearmServoL.setDirection(DcMotorSimple.Direction.FORWARD);
+            robot.forearmServoL.setPower(1);
+            robot.forearmServoR.setDirection(DcMotorSimple.Direction.REVERSE);
+            robot.forearmServoR.setPower(1);
         }
         if (gamepad2.b) {
-            newTargetPosition -= 2;
+            robot.forearmServoL.setDirection(DcMotorSimple.Direction.REVERSE);
+            robot.forearmServoL.setPower(1);
+            robot.forearmServoR.setDirection(DcMotorSimple.Direction.FORWARD);
+            robot.forearmServoR.setPower(1);
         }
-        if (!allowPastEndstops) {
-            newTargetPosition = (int) clamp(newTargetPosition, FOREARM_MIN, FOREARM_MAX);
+        if (gamepad2.x) {
+            robot.forearmServoL.setDirection(DcMotorSimple.Direction.FORWARD);
+            robot.forearmServoL.setPower(0);
+            robot.forearmServoR.setDirection(DcMotorSimple.Direction.REVERSE);
+            robot.forearmServoR.setPower(0);
         }
-        robot.forearmMotor.setTargetPosition(newTargetPosition);
     }
 
+    public int angleToTicks(double x) {
+        return (int) (x * EncoderTPR / 360);
+    }
+    public void goToForearm(double targetAngle, double rate) { //Assumes 0 is set to vertical arm position
+        if(angleToTicks(targetAngle) > robot.forearmEncoder.getCurrentPosition()) { //if target is ahead of current
+            robot.forearmServoL.setPower(rate);
+            robot.forearmServoR.setPower(rate);
+        } else {
+            robot.forearmServoL.setPower(-rate);
+            robot.forearmServoR.setPower(-rate);
+        }
+    }
+    /*
+    public void doTestForearm(Gamepad gamepad2, boolean allowPastEndstops) {
+        int newTargetPosition;
+        if (gamepad2.a) {
+            newTargetPosition = 170;
+            if (!allowPastEndstops) {
+                newTargetPosition = (int) clamp(newTargetPosition, FOREARM_MIN, FOREARM_MAX);
+                robot.forearmMotor.setTargetPosition(newTargetPosition);
+            }
+        }
+        if (gamepad2.b) {
+            newTargetPosition = 0;
+            if (!allowPastEndstops) {
+                newTargetPosition = (int) clamp(newTargetPosition, FOREARM_MIN, FOREARM_MAX);
+                robot.forearmMotor.setTargetPosition(newTargetPosition);
+            }
+        }
+    }
+*/
+    public void goToLinear(int newTargetPosition, double speed) {
+        if(newTargetPosition != robot.linearExtenderMotorL.getTargetPosition() && newTargetPosition != robot.linearExtenderMotorR.getTargetPosition()) {
+            newTargetPosition = (int) clamp(newTargetPosition, LINEAR_MIN, LINEAR_MAX);
+            robot.linearExtenderMotorL.setPower(speed);
+            robot.linearExtenderMotorR.setPower(speed);
+            robot.linearRetractor.setPower(speed);
+            robot.linearExtenderMotorL.setTargetPosition(newTargetPosition);
+            robot.linearExtenderMotorR.setTargetPosition(newTargetPosition);
+            robot.linearRetractor.setTargetPosition(newTargetPosition);
+        }
+    }
     public void doManualLinear(Gamepad gamepad2, boolean allowPastEndstops){
         int newTargetPosition = robot.linearExtenderMotorL.getTargetPosition();
         if (Math.abs(gamepad2.left_stick_y) > .15){
@@ -151,6 +191,7 @@ public class ArmController {
         if(!allowPastEndstops) {
             newTargetPosition = (int) clamp(newTargetPosition, LINEAR_MIN, LINEAR_MAX);
         }
+        robot.linearRetractor.setTargetPosition(newTargetPosition);
         robot.linearExtenderMotorL.setTargetPosition(newTargetPosition);
         robot.linearExtenderMotorR.setTargetPosition(newTargetPosition);
     }
