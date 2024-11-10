@@ -24,8 +24,8 @@ public class ArmController {
     public final int FOREARM_MAX = 2*90;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean clawOpen = false;
-    private final int openClawDeg = 90; // need to adjust these in testing
-    private final int closedClawDeg = 120;
+    private final int openClawDeg = 30; // need to adjust these in testing
+    private final int closedClawDeg = -5;
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
