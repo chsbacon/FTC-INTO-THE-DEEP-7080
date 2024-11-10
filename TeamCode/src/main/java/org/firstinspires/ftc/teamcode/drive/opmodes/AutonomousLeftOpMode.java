@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.drive.opmodes;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -11,7 +10,7 @@ import org.firstinspires.ftc.teamcode.drive.modules.Robot2024;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous
-public class AutonomousOpMode extends LinearOpMode {
+public class AutonomousLeftOpMode extends LinearOpMode {
     Robot2024 robot;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -19,16 +18,14 @@ public class AutonomousOpMode extends LinearOpMode {
         robot = new Robot2024(this, drive, true, true);
         robot.onOpmodeInit();
         drive.imu.resetYaw();
-        Pose2d start = new Pose2d(11, -60, Math.toRadians(90.00));
+        Pose2d start = new Pose2d(-12, -60, Math.toRadians(90.00));
         drive.setPoseEstimate(start);
 
         TrajectorySequence myTrajectory = drive.trajectorySequenceBuilder(start)
-                .splineTo(new Vector2d(0, -33), Math.toRadians(90.00))
+                .splineTo(new Vector2d(-53, -53), Math.toRadians(224.17))
+                .back(12)
                 .setReversed(true)
-                .lineTo(new Vector2d(0, -37.40))
-                .setReversed(false)
-                .turn(Math.toRadians(-90))
-                .splineTo(new Vector2d(58.49, -58), Math.toRadians(0))
+                .splineTo(new Vector2d(-26, 0), Math.toRadians(0))
                 .build();
 
         waitForStart();

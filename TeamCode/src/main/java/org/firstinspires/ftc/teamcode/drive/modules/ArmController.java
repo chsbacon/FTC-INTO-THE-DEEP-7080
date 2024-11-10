@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.modules;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -9,7 +7,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.util.Encoder;
 
 public class ArmController {
     private Robot2024 robot;
@@ -17,8 +14,8 @@ public class ArmController {
     public int targetAngle = 0;
     public final int LINEAR_MIN = 0;
     public final int LINEAR_MAX = 5580;
-    public final int FOREARM_MIN = 0;
-    public final int FOREARM_MAX = 2*90;
+    public final int FOREARM_VERT = 45;
+    public final int FOREARM_HORIZ = 135;
     public final int Intake = 500;
     public final int LowBasket = 1000;
     public final int HighBasket = LINEAR_MAX;
@@ -29,8 +26,8 @@ public class ArmController {
     private final int EncoderTPR = 8192;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean clawOpen = false;
-    private final int openClawDeg = 90; // need to adjust these in testing
-    private final int closedClawDeg = 120;
+    private final int openClawDeg = 30; // need to adjust these in testing
+    private final int closedClawDeg = -5;
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
@@ -49,17 +46,22 @@ public class ArmController {
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
 
         doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
-        //doClawControl(gamepad2);
+        if(gamepad2.right_bumper) {
+            doClawControl(false);
+        }
+        if(gamepad2.left_bumper) {
+            doClawControl(true);
+        }
         if(gamepad2.a) {
-            targetAngle=0;
+            targetAngle=FOREARM_VERT;
             goToForearm(targetAngle,1); //Vertical, hopefully
         }
         if(gamepad2.b) {
-            targetAngle=90;
+            targetAngle=FOREARM_HORIZ;
             goToForearm(targetAngle,1); //Forwards, hopefully
         }
         if(gamepad2.x) {
-            targetAngle=-45;
+            targetAngle=0;
             goToForearm(targetAngle,1); //Backwards, hopefully
         }
         if(gamepad2.dpad_up) {
@@ -126,6 +128,7 @@ public class ArmController {
         return (int) (x * EncoderTPR / 360);
     }
     public void goToForearm(double targetAngle, double rate) { //Assumes 0 is set to vertical arm position
+
         if(angleToTicks(targetAngle) > robot.forearmEncoder.getCurrentPosition()) { //if target is ahead of current
             robot.forearmServoL.setPower(rate);
             robot.forearmServoR.setPower(rate);

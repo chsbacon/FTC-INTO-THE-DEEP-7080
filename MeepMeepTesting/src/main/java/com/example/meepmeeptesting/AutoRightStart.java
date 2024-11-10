@@ -16,6 +16,10 @@ public class AutoRightStart {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
 
                 .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(new Pose2d(11, -62.5, Math.toRadians(90.00)))
+                        .addDisplacementMarker(() -> {
+                            //Arm raise
+                            //Forearm to vert
+                        })
                         .splineTo(new Vector2d(0, -33), Math.toRadians(90.00))
                         .setReversed(true)
                         .lineTo(new Vector2d(0, -37.40))

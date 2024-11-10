@@ -52,7 +52,7 @@ public class Robot2024 {
             forearmServoR.setDirection(DcMotorSimple.Direction.FORWARD);
             forearmEncoder = this.hardwareMap.get(DcMotorEx.class,"forearmEncoder");
             forearmEncoder.setDirection(DcMotorSimple.Direction.FORWARD);
-            //clawServo = this.hardwareMap.get(Servo.class, "claw"); //HW map declaration
+            clawServo = this.hardwareMap.get(Servo.class, "claw"); //HW map declaration
         }
     }
     public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive){
