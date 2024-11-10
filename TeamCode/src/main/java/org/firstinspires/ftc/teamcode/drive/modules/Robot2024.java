@@ -25,12 +25,13 @@ public class Robot2024 {
     public CRServo forearmServoR;
     public Servo clawServo;
     public ArmController armController = null;
+    public boolean doAuto = false;
     MecanumDrive2024 drive;
     Telemetry telemetry;
     WebcamName webcam;
     public boolean demoMode = false;
 
-    public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive, boolean doDriveController, boolean doArmController){
+    public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive, boolean doDriveController, boolean doArmController, boolean doAuto){
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.drive = drive;
@@ -54,9 +55,12 @@ public class Robot2024 {
             forearmEncoder.setDirection(DcMotorSimple.Direction.FORWARD);
             clawServo = this.hardwareMap.get(Servo.class, "claw"); //HW map declaration
         }
+        if (doAuto) {
+            this.doAuto = true;
+        }
     }
     public Robot2024(LinearOpMode opMode, MecanumDrive2024 drive){
-        this(opMode, drive, false, false);
+        this(opMode, drive, false, false, false);
     }
     public void onOpmodeInit(){
         //drive.imu.resetYaw();
@@ -69,6 +73,9 @@ public class Robot2024 {
             this.telemetry.log().add("initting arm...");
             this.telemetry.update();
             armController.onOpmodeInit(this, this.telemetry);
+        }
+        if (this.doAuto) { //close claw on start of auto
+            this.armController.doClawControl(false);
         }
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){

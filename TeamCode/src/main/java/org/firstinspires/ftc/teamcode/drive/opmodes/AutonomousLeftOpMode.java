@@ -15,7 +15,7 @@ public class AutonomousLeftOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive2024 drive = new MecanumDrive2024(hardwareMap);
-        robot = new Robot2024(this, drive, true, true);
+        robot = new Robot2024(this, drive, true, true,true);
         robot.onOpmodeInit();
         drive.imu.resetYaw();
         Pose2d start = new Pose2d(-12, -60, Math.toRadians(90.00));
