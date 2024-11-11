@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Autonomous
 public class AutonomousLeftOpMode extends LinearOpMode {
     Robot2024 robot;
+    public int depositTime = 2; //In seconds, amount of time it takes for the claw to retract
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive2024 drive = new MecanumDrive2024(hardwareMap);
@@ -22,7 +23,16 @@ public class AutonomousLeftOpMode extends LinearOpMode {
         drive.setPoseEstimate(start);
 
         TrajectorySequence myTrajectory = drive.trajectorySequenceBuilder(start)
+                .addDisplacementMarker(() -> { //This can run while the path runs, hence why we don't need a wait call
+                    robot.armController.goToLinear(robot.armController.HighBasket, 1); //Raise arm
+                    robot.armController.goToForearm(robot.armController.FOREARM_VERT,1); //Forearm to vert
+                })
                 .splineTo(new Vector2d(-53, -53), Math.toRadians(224.17))
+                .addDisplacementMarker(() -> { //Must not be interrupted by trajectory, requires a wait
+                    robot.armController.doClawControl(true); //Open claw
+                })
+                .waitSeconds(depositTime)
+                .addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0
                 .back(12)
                 .setReversed(true)
                 .splineTo(new Vector2d(-26, 0), Math.toRadians(0))

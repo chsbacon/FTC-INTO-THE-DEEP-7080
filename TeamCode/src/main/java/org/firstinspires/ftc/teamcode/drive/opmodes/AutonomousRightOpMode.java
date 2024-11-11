@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Autonomous
 public class AutonomousRightOpMode extends LinearOpMode {
     Robot2024 robot;
-    public int subPlacementTime = 10; //In seconds. This is way too high, but better to wait more. Testing can shorten this it's just a guess
+    public double subPlacementTime = 10; //In seconds. This is way too high, but better to wait more. Testing can shorten this it's just a guess
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -25,18 +25,24 @@ public class AutonomousRightOpMode extends LinearOpMode {
 
         TrajectorySequence myTrajectory = drive.trajectorySequenceBuilder(start)
                 .addDisplacementMarker(() -> { //This can run while the path runs, hence why we don't need a wait call
-                    robot.armController.goToLinear(robot.armController.HighBasket, 1); //Raise arm
+                    robot.armController.goToLinear(robot.armController.HighSub, 1); //Raise arm
                     robot.armController.goToForearm(robot.armController.FOREARM_VERT,1); //Forearm to vert
                 })
                 .splineTo(new Vector2d(0, -33), Math.toRadians(90.00))
-                .setReversed(true)
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
                     robot.armController.goToLinear(robot.armController.HighBasket-100, 0.5); //Lower arm to hook (slowly)
+                })
+                .waitSeconds(subPlacementTime /3)
+                .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
                     robot.armController.doClawControl(true); //Open claw
+                })
+                .waitSeconds(subPlacementTime /3)
+                .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
                     robot.armController.goToForearm(0, 1); //Return forearm to back
                 })
-                .waitSeconds(subPlacementTime)
+                .waitSeconds(subPlacementTime /3)
                 .addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0
+                .setReversed(true)
                 .lineTo(new Vector2d(0, -37.40))
                 .setReversed(false)
                 .turn(Math.toRadians(-90))
