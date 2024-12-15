@@ -1,15 +1,22 @@
 package org.firstinspires.ftc.teamcode.drive.modules;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.drive.hardware.MecanumDrive2024;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class ArmController {
     private Robot2024 robot;
+    private MecanumDrive2024 drive;
+
     private Telemetry telemetry;
     public int targetAngle = 0;
     public final int LINEAR_MIN = 0;
@@ -47,10 +54,10 @@ public class ArmController {
 
         doManualLinear(gamepad2, gamepad2.start && gamepad2.left_bumper);
         if(gamepad2.right_bumper) {
-            doClawControl(false);
+            doClawControl(false, 90);
         }
         if(gamepad2.left_bumper) {
-            doClawControl(true);
+            doClawControl(true, 90);
         }
         if(gamepad2.a) {
             targetAngle=FOREARM_VERT;
@@ -96,7 +103,18 @@ public class ArmController {
         telemetry.addData("encoder position", robot.forearmEncoder.getCurrentPosition());
         loopTimer.reset();
     }
-    public void doClawControl(boolean clawOpen){
+    public void doClawControl(boolean clawOpen, double rotation){
+        //Implements field-oriented rotation
+        double currRotation = -drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + 90; //TODO: Test if negation is needed
+        double adjustedRotation = rotation - currRotation;
+        if (adjustedRotation > 180) { //Claw is symmetric, so 181=1, etc.
+            adjustedRotation -= 180;
+        }
+        else if(adjustedRotation < 0) {
+            adjustedRotation += 180;
+        }
+        robot.clawRotate.setposition(adjustedRotation); //TODO: Add rotation servo to HW Map
+
         if (clawOpen) {
             robot.clawServo.setPosition(openClawDeg);
         } else {

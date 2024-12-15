@@ -75,7 +75,7 @@ public class Robot2024 {
             armController.onOpmodeInit(this, this.telemetry);
         }
         if (this.doAuto) { //close claw on start of auto
-            this.armController.doClawControl(false);
+            this.armController.doClawControl(false, 0);
         }
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){

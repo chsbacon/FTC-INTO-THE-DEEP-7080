@@ -29,7 +29,7 @@ public class AutonomousLeftOpMode extends LinearOpMode {
                 })
                 .splineTo(new Vector2d(-53, -53), Math.toRadians(224.17))
                 .addDisplacementMarker(() -> { //Must not be interrupted by trajectory, requires a wait
-                    robot.armController.doClawControl(true); //Open claw
+                    robot.armController.doClawControl(true, 0); //Open claw
                 })
                 .waitSeconds(depositTime)
                 .addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0

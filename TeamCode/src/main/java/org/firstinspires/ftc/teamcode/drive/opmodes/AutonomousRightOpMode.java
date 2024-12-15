@@ -34,7 +34,7 @@ public class AutonomousRightOpMode extends LinearOpMode {
                 })
                 .waitSeconds(subPlacementTime /3)
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
-                    robot.armController.doClawControl(true); //Open claw
+                    robot.armController.doClawControl(true, 0); //Open claw
                 })
                 .waitSeconds(subPlacementTime /3)
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
