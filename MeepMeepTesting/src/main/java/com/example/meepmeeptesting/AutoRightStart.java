@@ -25,7 +25,9 @@ public class AutoRightStart {
                         .lineTo(new Vector2d(0, -37.40))
                         .setReversed(false)
                         .turn(Math.toRadians(-90))
-                        .splineTo(new Vector2d(58.49, -58), Math.toRadians(0))
+                        .splineTo(new Vector2d(37.37, -38.66), Math.toRadians(90.00))
+                        .splineTo(new Vector2d(36.22, -21.27), Math.toRadians(90.00))
+                        .splineTo(new Vector2d(58.20, -11.93), Math.toRadians(0))
                         .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTOTHEDEEP_JUICE_DARK)

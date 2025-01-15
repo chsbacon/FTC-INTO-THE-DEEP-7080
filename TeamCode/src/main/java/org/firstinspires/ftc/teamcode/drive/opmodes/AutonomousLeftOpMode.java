@@ -24,12 +24,12 @@ public class AutonomousLeftOpMode extends LinearOpMode {
 
         TrajectorySequence myTrajectory = drive.trajectorySequenceBuilder(start)
                 .addDisplacementMarker(() -> { //This can run while the path runs, hence why we don't need a wait call
-                    robot.armController.goToLinear(robot.armController.HighBasket, 1); //Raise arm
-                    robot.armController.goToForearm(robot.armController.FOREARM_VERT,1); //Forearm to vert
+//              TODO: Needs to implement state machine
+
                 })
                 .splineTo(new Vector2d(-53, -53), Math.toRadians(224.17))
                 .addDisplacementMarker(() -> { //Must not be interrupted by trajectory, requires a wait
-                    robot.armController.doClawControl(true, 0); //Open claw
+//                    TODO: Needs to implement state machine
                 })
                 .waitSeconds(depositTime)
                 .addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0

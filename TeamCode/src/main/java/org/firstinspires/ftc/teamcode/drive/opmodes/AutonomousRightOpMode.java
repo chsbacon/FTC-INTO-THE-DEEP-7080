@@ -25,16 +25,15 @@ public class AutonomousRightOpMode extends LinearOpMode {
 
         TrajectorySequence myTrajectory = drive.trajectorySequenceBuilder(start)
                 .addDisplacementMarker(() -> { //This can run while the path runs, hence why we don't need a wait call
-                    robot.armController.goToLinear(robot.armController.HighSub, 1); //Raise arm
-                    robot.armController.goToForearm(robot.armController.FOREARM_VERT,1); //Forearm to vert
+
                 })
                 .splineTo(new Vector2d(0, -33), Math.toRadians(90.00))
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
-                    robot.armController.goToLinear(robot.armController.HighBasket-100, 0.5); //Lower arm to hook (slowly)
+//                   TODO: Needs to implement state machine
                 })
                 .waitSeconds(subPlacementTime /3)
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
-                    robot.armController.doClawControl(true, 0); //Open claw
+
                 })
                 .waitSeconds(subPlacementTime /3)
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
