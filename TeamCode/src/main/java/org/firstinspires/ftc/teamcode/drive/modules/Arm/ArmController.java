@@ -22,9 +22,6 @@ public class ArmController {
 
     private ArmState currentState;
 
-    // Linear slide constants
-    public final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 0;
-    public final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = 5580; // TODO: Get the right max value
 
     // Motor consts
 
@@ -35,17 +32,13 @@ public class ArmController {
 
 // Extender motor is go bilda and rotation motor is rev core hex (TPR =Ticks per rotation)
 
-    // Forearm rotation constants
-    // TODO: Measure actual values and mark after tests
 
-    public final double FOREARM_VERT_ENCODER_TICK = 0; //
-    private final double FOREARM_HORIZ_ENCODER_TICK = 0; //
     // Probobly should move these into method variables when we implement the arm extension method
 
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
-        for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR}){
+        for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR,robot.armRotationMotorL,robot.armRotationMotorR}){
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setTargetPosition(0);
             motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -60,11 +53,11 @@ public class ArmController {
             return;
         }
 
-        telemetry.addData("left: linearC: ", robot.linearExtenderMotorL.getCurrentPosition());
-        telemetry.addData("right: linearC: ", robot.linearExtenderMotorR.getCurrentPosition());
-        telemetry.addData("left: linearT: ", robot.linearExtenderMotorL.getTargetPosition());
-        telemetry.addData("right: linearT: ", robot.linearExtenderMotorL.getTargetPosition());
-        telemetry.addData("encoder position", robot.forearmEncoder.getCurrentPosition());
+
+        telemetry.addData("Extender Motor L", robot.linearExtenderMotorL.getCurrentPosition());
+        telemetry.addData("Extender Motor R", robot.linearExtenderMotorR.getCurrentPosition());
+        telemetry.addData("Rotator Motor L", robot.armRotationMotorL.getCurrentPosition());
+        telemetry.addData("Rotator Motor R", robot.armRotationMotorR.getCurrentPosition());
         loopTimer.reset();
     }
 
@@ -128,11 +121,41 @@ public class ArmController {
 
     }
 
+    public void moveWrist(double wristAngle) {
+        final double WRIST_MAX_ANGLE = 180;
+        final double WRIST_MIN_ANGLE = 0;
+        robot.wristServo.setPosition(clamp(wristAngle, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE));
+    }
+
+    public void rotateSlideToTick(int tick){
+        // TODO: Measure actual values and mark after tests
+        final int FOREARM_HORIZ_TICK = 0;
+        final int FOREARM_VERT_TICK = 0;
+        robot.armRotationMotorL.setTargetPosition(tick);
+        robot.armRotationMotorR.setTargetPosition(tick);
+    }
+
+    public void rotateSlideToAngle(double angle){
+        rotateSlideToTick(angleToTicks(angle,false));
+    }
+
+    public void extendSlideToTick(int tick){
+        final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 0;
+        final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = 0; // TODO: Get the right max value
+
+        robot.linearExtenderMotorL.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
+        robot.linearExtenderMotorR.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
+    }
+
+    public void extendSlideToAngle(double angle){
+        extendSlideToTick(angleToTicks(angle,true));
+    }
+
     @Deprecated
     public void goToLinear(int newTargetPosition, double speed) {
 
         if(newTargetPosition != robot.linearExtenderMotorL.getTargetPosition() && newTargetPosition != robot.linearExtenderMotorR.getTargetPosition()) {
-            newTargetPosition = (int) clamp(newTargetPosition, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK);
+//            newTargetPosition = (int) clamp(newTargetPosition, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK);
 //            robot.linearExtenderMotorL.setPower(speed);
 //            robot.linearExtenderMotorR.setPower(speed);
 //            robot.linearRetractor.setPower(speed);
