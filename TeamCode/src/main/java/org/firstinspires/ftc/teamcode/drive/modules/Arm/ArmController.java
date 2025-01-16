@@ -60,6 +60,7 @@ public class ArmController {
         telemetry.addData("Extender Motor R", robot.linearExtenderMotorR.getCurrentPosition());
         telemetry.addData("Rotator Motor L", robot.armRotationMotorL.getCurrentPosition());
         telemetry.addData("Rotator Motor R", robot.armRotationMotorR.getCurrentPosition());
+        telemetry.addData("Wrist Position", robot.wristServo.getPosition());
         loopTimer.reset();
     }
 
@@ -94,7 +95,7 @@ public class ArmController {
         int newTargetPosition=robot.armRotationMotorL.getCurrentPosition();
         if(gamepad2.a) {
             newTargetPosition+=10;
-        } else if(gamepad2.a) {
+        } else if(gamepad2.b) {
             newTargetPosition-=10;
         }
         robot.armRotationMotorL.setTargetPosition(newTargetPosition);
