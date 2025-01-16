@@ -179,28 +179,32 @@ public class ArmController {
 
 
 
-    public void rotateSlideToTick(int tick){
+    public void rotateSlideToTick(int tick, int speed){
         // TODO: Measure actual values and mark after tests
         final int FOREARM_HORIZ_TICK = 0;
         final int FOREARM_VERT_TICK = 0;
-        robot.armRotationMotorL.setTargetPosition(tick);
-        robot.armRotationMotorR.setTargetPosition(tick);
+        robot.armRotationMotorL.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
+        robot.armRotationMotorR.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
+        robot.armRotationMotorL.setPower(speed);
+        robot.armRotationMotorR.setPower(speed);
     }
 
-    public void rotateSlideToAngle(double angle){
-        rotateSlideToTick(angleToTicks(angle,false));
+    public void rotateSlideToAngle(double angle,int speed){
+        rotateSlideToTick(angleToTicks(angle,false),speed);
     }
 
-    public void extendSlideToTick(int tick){
+    public void extendSlideToTick(int tick, int speed){
         final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 0;
         final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = 0; // TODO: Get the right max value
 
         robot.linearExtenderMotorL.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
         robot.linearExtenderMotorR.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
+        robot.linearExtenderMotorL.setPower(speed);
+        robot.linearExtenderMotorR.setPower(speed);
     }
 
-    public void extendSlideToAngle(double angle){
-        extendSlideToTick(angleToTicks(angle,true));
+    public void extendSlideToAngle(double angle, int speed){
+        extendSlideToTick(angleToTicks(angle,true),speed);
     }
 
     @Deprecated
