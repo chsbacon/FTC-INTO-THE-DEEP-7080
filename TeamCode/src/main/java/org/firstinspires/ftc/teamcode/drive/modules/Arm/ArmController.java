@@ -41,17 +41,17 @@ public class ArmController {
     public void onOpmodeInit(Robot2024 robot, Telemetry telemetry) {
         this.robot = robot;
         this.telemetry = telemetry;
-        for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR,robot.armRotationMotorL,robot.armRotationMotorR}){
+        for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR,robot.armRotationMotorR,robot.armRotationMotorL}){
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setTargetPosition(0);
             motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motor.setPower(1);
+            motor.setPower(0.5);
         }
 
 
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
-        if( inDebugMode){
+        if(inDebugMode){
             debugDoLoop(gamepad1, gamepad2);
             return;
         }
@@ -81,11 +81,38 @@ public class ArmController {
     }
 
     public void debugDoLoop(Gamepad gamepad1, Gamepad gamepad2){
+        manualRotation(gamepad2);
+        manualExtension(gamepad2);
         // TODO: 1/16/25 implement manual controls
     }
 
     public void setCurrentState(ArmState newState){
         currentState = newState;
+    }
+
+    public void manualRotation(Gamepad gamepad2) {
+        int newTargetPosition=robot.armRotationMotorL.getCurrentPosition();
+        if(gamepad2.a) {
+            newTargetPosition+=10;
+        } else if(gamepad2.a) {
+            newTargetPosition-=10;
+        }
+        robot.armRotationMotorL.setTargetPosition(newTargetPosition);
+        robot.armRotationMotorR.setTargetPosition(newTargetPosition);
+    }
+    public void manualExtension(Gamepad gamepad2) {
+        if (Math.abs(gamepad2.left_stick_y) > .15) { //if stick is pressed far enough
+            for (DcMotorEx motor : new DcMotorEx[]{robot.linearExtenderMotorL, robot.linearExtenderMotorR}) { //set extenders to run on power
+                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motor.setPower(gamepad2.left_stick_y); //power proportional to joystick
+            }
+        } else { //if stick is not pressed enough
+            for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR}){ //reset extenders to run by encoder
+                motor.setTargetPosition(robot.linearExtenderMotorL.getCurrentPosition());
+                motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motor.setPower(0.5);
+            }
+        }
     }
 
     /**
