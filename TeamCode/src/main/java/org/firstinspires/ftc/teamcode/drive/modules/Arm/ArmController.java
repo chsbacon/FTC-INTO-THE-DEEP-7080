@@ -18,7 +18,7 @@ public class ArmController {
     private MecanumDrive2024 drive;
     private Telemetry telemetry;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-
+    private boolean inDebugMode = false;
 
     private ArmState currentState;
 
@@ -28,8 +28,11 @@ public class ArmController {
 
     // Motor consts
 
-    private final int EXTENDER_LSLIDE_MOTOR_TPR = 8192; // TODO: uses old value, reaffirm with new measurements
-    private final int ROTATOR_MOTOR_TPR = 8192; // TODO: New motor, need to measure
+    private static final double EXTENDER_LSLIDE_MOTOR_TPR = 537.7; // go bilda
+    private static final double ROTATOR_MOTOR_TPR = 528.64; // Rev motor
+
+
+
 // Extender motor is go bilda and rotation motor is rev core hex (TPR =Ticks per rotation)
 
     // Forearm rotation constants
@@ -52,6 +55,10 @@ public class ArmController {
 
     }
     public void doLoop(Gamepad gamepad1, Gamepad gamepad2){
+        if( inDebugMode){
+            debugDoLoop(gamepad1, gamepad2);
+            return;
+        }
 
         telemetry.addData("left: linearC: ", robot.linearExtenderMotorL.getCurrentPosition());
         telemetry.addData("right: linearC: ", robot.linearExtenderMotorR.getCurrentPosition());
@@ -72,6 +79,14 @@ public class ArmController {
         if (currentState != null){
             currentState.move(this);
         }
+    }
+
+    public void enableDebugMode(boolean enable){
+        inDebugMode = enable;
+    }
+
+    public void debugDoLoop(Gamepad gamepad1, Gamepad gamepad2){
+        // TODO: 1/16/25 implement manual controls
     }
 
     public void setCurrentState(ArmState newState){
@@ -130,16 +145,16 @@ public class ArmController {
 
     @Deprecated
     public void doManualLinear(Gamepad gamepad2, boolean allowPastEndstops){
-        int newTargetPosition = robot.linearExtenderMotorL.getTargetPosition();
-        if (Math.abs(gamepad2.left_stick_y) > .15){
-            newTargetPosition += -40 * gamepad2.left_stick_y; // negative 40 because y is reversed
-        }
-        if(!allowPastEndstops) {
-            newTargetPosition = (int) clamp(newTargetPosition, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK);
-        }
-        robot.linearRetractor.setTargetPosition(newTargetPosition);
-        robot.linearExtenderMotorL.setTargetPosition(newTargetPosition);
-        robot.linearExtenderMotorR.setTargetPosition(newTargetPosition);
+//        int newTargetPosition = robot.linearExtenderMotorL.getTargetPosition();
+//        if (Math.abs(gamepad2.left_stick_y) > .15){
+//            newTargetPosition += -40 * gamepad2.left_stick_y; // negative 40 because y is reversed
+//        }
+//        if(!allowPastEndstops) {
+//            newTargetPosition = (int) clamp(newTargetPosition, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK);
+//        }
+//        robot.linearRetractor.setTargetPosition(newTargetPosition);
+//        robot.linearExtenderMotorL.setTargetPosition(newTargetPosition);
+//        robot.linearExtenderMotorR.setTargetPosition(newTargetPosition);
         throw new UnsupportedOperationException("This method is deprecated");
     }
 
