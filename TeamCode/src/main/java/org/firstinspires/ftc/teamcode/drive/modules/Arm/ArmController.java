@@ -19,8 +19,11 @@ public class ArmController {
     private Telemetry telemetry;
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean inDebugMode = false;
-
     private ArmState currentState;
+
+
+
+    public final int ServoTPR = 0;
 
 
     // Motor consts
@@ -52,7 +55,6 @@ public class ArmController {
             debugDoLoop(gamepad1, gamepad2);
             return;
         }
-
 
         telemetry.addData("Extender Motor L", robot.linearExtenderMotorL.getCurrentPosition());
         telemetry.addData("Extender Motor R", robot.linearExtenderMotorR.getCurrentPosition());
@@ -113,19 +115,41 @@ public class ArmController {
         throw new UnsupportedOperationException("This method is deprecated");
     }
 
-    public void moveClaw(int clawAngle, double wristAngle){
-         final int CLAW_MAX_ANGLE = 180;
-         final int CLAW_MIN_ANGLE = 0;
-        // TODO: 1/15/25 measure these values
-        robot.clawServo.setPosition(clamp(clawAngle,CLAW_MIN_ANGLE,CLAW_MAX_ANGLE) );
 
+
+    public void twistClawToAngle(int angle){
+        final int TWSIT_MAX_ANGLE = 0;
+        final int TWSIT_MIN_ANGLE = 0;
+        // TODO: 1/16/25 Measure values
+        robot.clawServo.setPosition(mapRange(clamp(angle,TWSIT_MIN_ANGLE,TWSIT_MAX_ANGLE),0,180,0,1));
     }
 
-    public void moveWrist(double wristAngle) {
+    public void moveWristToAngle(double wristAngle) {
         final double WRIST_MAX_ANGLE = 180;
         final double WRIST_MIN_ANGLE = 0;
         robot.wristServo.setPosition(clamp(wristAngle, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE));
     }
+
+    public void moveClaw(int angle){
+        final int CLAW_MAX_ANGLE = 0;
+        final int CLAW_MIN_ANGLE = 0;
+        // TODO: 1/16/25 Measure values
+        robot.clawServo.setPosition(mapRange(clamp(angle,CLAW_MIN_ANGLE,CLAW_MAX_ANGLE),0,180,0,1));
+    }
+
+
+    //Implementing this is counter intuitive, as its not clear that passing a bool will make the claw open or close, maybe rename?
+    public void moveClaw(boolean open){
+        final int CLAW_OPEN_ANGLE = 0;
+        final int CLAW_CLOSED_ANGLE = 0; // TODO: 1/16/25 Measure and Mark
+        if(open){
+            moveClaw(CLAW_OPEN_ANGLE);
+        } else {
+            moveClaw(CLAW_CLOSED_ANGLE);
+        }
+    }
+
+
 
     public void rotateSlideToTick(int tick){
         // TODO: Measure actual values and mark after tests
@@ -184,5 +208,11 @@ public class ArmController {
     private double clamp(double val, double min, double max){
         return Math.max(min, Math.min(max, val));
     }
+
+    //straight rip from arduino
+    private double mapRange(double x, double in_min, double in_max, double out_min, double out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
 }
 
