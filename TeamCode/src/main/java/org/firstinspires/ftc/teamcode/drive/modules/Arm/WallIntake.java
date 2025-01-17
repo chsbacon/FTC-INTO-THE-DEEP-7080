@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.modules.Arm;
 
 import java.util.Objects;
 
+@Deprecated
 public class WallIntake implements ArmState{
 
     public void move(ArmController armController){

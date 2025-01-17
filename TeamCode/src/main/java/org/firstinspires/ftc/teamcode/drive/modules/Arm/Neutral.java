@@ -11,7 +11,8 @@ public class Neutral implements ArmState {
         armController.rotateSlide(true,.5,true); //rotate up
         armController.extendSlideToTick(20,0.5,false);
         armController.moveClaw(false);
-        armController.moveWristToAngle(1); // TODO: 1/14/25 mesure
+        armController.moveWristToAngle(1);
+        armController.twistClawToAngle(0.13);
 
     }
 }
