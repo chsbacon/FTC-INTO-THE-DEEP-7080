@@ -147,10 +147,10 @@ public class ArmController {
     }
 
     public void move(ArmState state){
-        currentState = state;
         if (currentState != null){
             currentState.move(this);
         }
+        currentState = state;
     }
 
     public void enableDebugMode(boolean enable){
