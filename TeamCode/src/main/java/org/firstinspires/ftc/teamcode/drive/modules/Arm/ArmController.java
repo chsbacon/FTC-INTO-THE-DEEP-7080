@@ -188,13 +188,18 @@ public class ArmController {
         robot.armRotationMotorR.setTargetPosition(newTargetPosition);
     }
     public void manualExtension(Gamepad gamepad2) {
+        double speedModifier = 1;
+        if (gamepad2.left_trigger > 0.15){
+            speedModifier = .5;
+        }
+
         if (Math.abs(gamepad2.left_stick_y) > .15) { //if stick is pressed far enough
             for (DcMotorEx motor : new DcMotorEx[]{robot.linearExtenderMotorL, robot.linearExtenderMotorR}) { //set extenders to run on power
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 if(robot.linearExtenderMotorL.getCurrentPosition()>20
                         ||gamepad2.left_stick_y<0
                         ||robot.linearExtenderMotorL.getCurrentPosition()<MAX_EXTEND) { //Don't break the slide
-                    motor.setPower(-gamepad2.left_stick_y); //power proportional to joystick
+                    motor.setPower(-gamepad2.left_stick_y * speedModifier); //power proportional to joystick
                 } else {
                     motor.setPower(0);
                 }
@@ -204,7 +209,7 @@ public class ArmController {
             for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR}){ //reset extenders to run by encoder
                 motor.setTargetPosition(robot.linearExtenderMotorL.getCurrentPosition());
                 motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                motor.setPower(0.5);
+                motor.setPower(0.5 * speedModifier);
                 motor.setTargetPosition(robot.linearExtenderMotorL.getCurrentPosition());
             }
             prevTrigger=false;
@@ -306,48 +311,6 @@ public class ArmController {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    @Deprecated
-    public void goToLinear(int newTargetPosition, double speed) {
-
-        if(newTargetPosition != robot.linearExtenderMotorL.getTargetPosition() && newTargetPosition != robot.linearExtenderMotorR.getTargetPosition()) {
-//            newTargetPosition = (int) clamp(newTargetPosition, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK);
-//            robot.linearExtenderMotorL.setPower(speed);
-//            robot.linearExtenderMotorR.setPower(speed);
-//            robot.linearRetractor.setPower(speed);
-//            robot.linearExtenderMotorL.setTargetPosition(newTargetPosition);
-//            robot.linearExtenderMotorR.setTargetPosition(newTargetPosition);
-//            robot.linearRetractor.setTargetPosition(newTargetPosition);
-        }
-        throw new UnsupportedOperationException("This method is deprecated");
-    }
-
-    @Deprecated
-    public void doManualLinear(Gamepad gamepad2, boolean allowPastEndstops){
-//        int newTargetPosition = robot.linearExtenderMotorL.getTargetPosition();
-//        if (Math.abs(gamepad2.left_stick_y) > .15){
-//            newTargetPosition += -40 * gamepad2.left_stick_y; // negative 40 because y is reversed
-//        }
-//        if(!allowPastEndstops) {
-//            newTargetPosition = (int) clamp(newTargetPosition, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK);
-//        }
-//        robot.linearRetractor.setTargetPosition(newTargetPosition);
-//        robot.linearExtenderMotorL.setTargetPosition(newTargetPosition);
-//        robot.linearExtenderMotorR.setTargetPosition(newTargetPosition);
-        throw new UnsupportedOperationException("This method is deprecated");
-    }
-
-    @Deprecated
-    public void goToForearm(double targetAngle, double rate) { //Assumes 0 is set to vertical arm position
-
-//        if(angleToTicks(targetAngle,true) > robot.forearmEncoder.getCurrentPosition()) { //if target is ahead of current
-//            robot.forearmServoL.setPower(rate);
-//            robot.forearmServoR.setPower(rate);
-//        } else {
-//            robot.forearmServoL.setPower(-rate);
-//            robot.forearmServoR.setPower(-rate);
-//        }
-        throw new UnsupportedOperationException("This method is deprecated");
-    }
 
 
 
