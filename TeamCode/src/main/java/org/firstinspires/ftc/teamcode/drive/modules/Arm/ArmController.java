@@ -5,13 +5,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.drive.hardware.MecanumDrive2024;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.modules.Robot2024;
-
-import org.firstinspires.ftc.teamcode.drive.modules.Arm.*;
 
 public class ArmController {
     private Robot2024 robot;
@@ -32,7 +29,7 @@ public class ArmController {
     private static final double EXTENDER_LSLIDE_MOTOR_TPR = 537.7; // go bilda
     private static final double ROTATOR_MOTOR_TPR = 1527.79; // Rev motor
 
-    private static final int MAX_EXTEND = 3500;
+    public static final int MAX_EXTEND = 3500;
 
 
     private static int FOREARM_HORIZ_TICK = 650;
@@ -65,7 +62,9 @@ public class ArmController {
         telemetry.addData("Extender Motor R", robot.linearExtenderMotorR.getCurrentPosition());
         telemetry.addData("Rotator Motor L", robot.armRotationMotorL.getCurrentPosition());
         telemetry.addData("Rotator Motor R", robot.armRotationMotorR.getCurrentPosition());
+        telemetry.addData("Claw Position", robot.clawServo.getPosition());
         telemetry.addData("Twist Position", robot.twistServo.getPosition());
+        telemetry.addData("Wrist Position", robot.wristServo.getPosition());
         telemetry.update();
 
         if (gamepad2.right_bumper) {
@@ -100,17 +99,28 @@ public class ArmController {
         double slideTargetPosition = robot.linearExtenderMotorL.getCurrentPosition();
         slideTargetPosition += gamepad1.right_stick_y;
         manualExtension(gamepad2);
+        /*if(gamepad2.dpad_left) {
+            rotateSlide(false,0.5,false);
+        }
+        if(gamepad2.dpad_right) {
+            rotateSlide(true,0.5,false);
+        }
+         */
         if (gamepad2.b) {
          setCurrentState(new Neutral());
+         move();
         }
         else if (gamepad2.y) {
             setCurrentState(new UpperBucketDeposit());
+            move();
         }
         else if (gamepad2.x) {
             setCurrentState(new HighChamberDeposit());
+            move();
         }
         else if (gamepad2.a) {
             setCurrentState(new GroundIntake());
+            move();
         }
         /*
 
@@ -198,29 +208,29 @@ public class ArmController {
      * @return Returns the number of ticks to move the motor
      */
 
-    public double angleToTicks(double theta, boolean isExtenderMotor) {
+    public int angleToTicks(double theta, boolean isExtenderMotor) {
         if (isExtenderMotor) {
-            return  (theta * EXTENDER_LSLIDE_MOTOR_TPR / 360);
+            return (int) (theta * EXTENDER_LSLIDE_MOTOR_TPR / 360);
         }
-        return  (theta * ROTATOR_MOTOR_TPR / 360);
+        return (int) (theta * ROTATOR_MOTOR_TPR / 360);
     }
 
-
-
-
-
-    public void twistClawToAngle(int angle){
-        final int TWSIT_MAX_ANGLE = 0;
-        final int TWSIT_MIN_ANGLE = 0;
+    public void twistClawToAngle(double angle){
+        final int TWIST_MAX_ANGLE = 0;
+        final int TWIST_MIN_ANGLE = 0;
         // TODO: 1/16/25 Measure values
-        robot.clawServo.setPosition(mapRange(clamp(angle,TWSIT_MIN_ANGLE,TWSIT_MAX_ANGLE),0,180,0,1));
+        robot.twistServo.setPosition(angle);
+    }
+
+    public void twistClaw(double tick){
+        robot.twistServo.setPosition(tick);
     }
 
     public void moveWristToAngle(double wristAngle) {
-        final double WRIST_MAX_ANGLE = 135;
-        final double WRIST_MIN_ANGLE = -135;
+        final double WRIST_MAX_ANGLE = 1;
+        final double WRIST_MIN_ANGLE = 0;
         final double  WRIST_0_OFFSET = 0; // TODO: 1/16/25 Measure and Mark
-        robot.wristServo.setPosition(clamp(wristAngle, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE));
+        robot.wristServo.setPosition(wristAngle);
     }
 
     public void moveClaw(double angle){
@@ -244,19 +254,23 @@ public class ArmController {
 
 
 
-    public void rotateSlide(int tick, double speed){
+    public void rotateSlide(int tick, double speed, boolean delay){
         // TODO: Measure actual values and mark after tests
-        robot.armRotationMotorL.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
-        robot.armRotationMotorR.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
+        robot.armRotationMotorL.setTargetPosition((int) clamp(tick, FOREARM_VERT_TICK, FOREARM_HORIZ_TICK));
+        robot.armRotationMotorR.setTargetPosition((int) clamp(tick, FOREARM_VERT_TICK, FOREARM_HORIZ_TICK));
         robot.armRotationMotorL.setPower(speed);
         robot.armRotationMotorR.setPower(speed);
+        if(delay) {
+            while (tick != robot.armRotationMotorL.getCurrentPosition()) {
+            } //wait until slide arrives to position
+        }
     }
 
-    public void rotateSlide(boolean isVertical, double speed){
-        rotateSlide(isVertical ? FOREARM_HORIZ_TICK : FOREARM_VERT_TICK, speed);
+    public void rotateSlide(boolean isVertical, double speed, boolean delay){
+        rotateSlide(isVertical ? FOREARM_VERT_TICK : FOREARM_HORIZ_TICK, speed, delay);
     }
 
-    public void extendSlideToTick(int tick, int speed){
+    public void extendSlideToTick(int tick, double speed,boolean delay){
         final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 20;
         final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = MAX_EXTEND; // TODO: Get the right max value
 
@@ -264,10 +278,14 @@ public class ArmController {
         robot.linearExtenderMotorR.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
         robot.linearExtenderMotorL.setPower(speed);
         robot.linearExtenderMotorR.setPower(speed);
+        if(delay) {
+            while(tick!=robot.linearExtenderMotorL.getCurrentPosition()) {
+            } //wait until slide arrives to position
+        }
     }
 
     public void extendSlideToAngle(double angle, int speed){
-        extendSlideToTick(angleToTicks(angle,true),speed);
+        extendSlideToTick(angleToTicks(angle,true),speed,false);
     }
     private double clamp(double val, double min, double max){
         return Math.max(min, Math.min(max, val));
