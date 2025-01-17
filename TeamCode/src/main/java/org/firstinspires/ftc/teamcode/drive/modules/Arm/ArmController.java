@@ -122,6 +122,12 @@ public class ArmController {
             setCurrentState(new GroundIntake());
             move();
         }
+
+        if  (gamepad2.a && gamepad2.left_bumper){
+            move(new WallIntake());
+        }
+
+
         /*
 
         - implement things from MD file here
@@ -165,6 +171,10 @@ public class ArmController {
 
     public void setCurrentState(ArmState newState){
         currentState = newState;
+    }
+
+    public ArmState getCurrentState(){
+        return currentState;
     }
 
     public void manualRotation(Gamepad gamepad2) {

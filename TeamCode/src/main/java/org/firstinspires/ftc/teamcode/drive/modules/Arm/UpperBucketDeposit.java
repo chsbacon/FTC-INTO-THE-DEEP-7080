@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.drive.modules.Arm;
 public class UpperBucketDeposit implements ArmState {
 
     private static final int UNSTICK = 700;
-    private static final int HIGH_BASKET_EXTENDER_ENCODER_TICK = ArmController.MAX_EXTEND-500;
+    private static final int HIGH_BASKET_EXTENDER_ENCODER_TICK = ArmController.MAX_EXTEND-750;
 
     @Override
     public void move(ArmController armController) {

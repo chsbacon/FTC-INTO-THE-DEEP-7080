@@ -9,6 +9,9 @@ public class GroundIntake implements ArmState {
 
     @Override
     public void move(ArmController armController) {
+        if (!armController.getCurrentState().equals(new WallIntake())){
+            armController.extendSlideToTick(GROUND_EXTENDER_ENCODER_TICK, .5, true);
+        }
         armController.extendSlideToTick(GROUND_EXTENDER_ENCODER_TICK, .5,true); //Wait for unstick
         armController.rotateSlide(false, .5,false);
         armController.moveWristToAngle(WRIST_INTAKE_ANGLE);
