@@ -37,10 +37,10 @@ public class RightHangBasket extends LinearOpMode {
                 })
                 .waitSeconds(subPlacementTime /3)
                 .addDisplacementMarker(() -> { //THIS MUST RUN UNINTERRUPTED BY TRAJECTORY. We use a wait here to ensure the robot doesn't start moving while it's still placing
-                    robot.armController.goToForearm(0, 1); //Return forearm to back
+                   // robot.armController.goToForearm(0, 1); //Return forearm to back
                 })
                 .waitSeconds(subPlacementTime /3)
-                .addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0
+                //.addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0
                 .setReversed(true)
                 .lineTo(new Vector2d(0, -37.40))
                 .setReversed(false)

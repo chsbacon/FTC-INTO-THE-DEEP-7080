@@ -32,7 +32,7 @@ public class AutonomousLeftOpMode extends LinearOpMode {
 //                    TODO: Needs to implement state machine
                 })
                 .waitSeconds(depositTime)
-                .addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0
+                //.addDisplacementMarker(() -> robot.armController.goToLinear(0, 1)) //Lower arm back to 0
                 .back(12)
                 .setReversed(true)
                 .splineTo(new Vector2d(-26, 0), Math.toRadians(0))

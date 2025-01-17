@@ -29,10 +29,10 @@ public class ArmController {
     private static final double EXTENDER_LSLIDE_MOTOR_TPR = 537.7; // go bilda
     private static final double ROTATOR_MOTOR_TPR = 1527.79; // Rev motor
 
-    public static final int MAX_EXTEND = 3500;
+    public static final int MAX_EXTEND = 3600;
 
 
-    private static int FOREARM_HORIZ_TICK = 650;
+    private static int FOREARM_HORIZ_TICK = 648;
     private static int FOREARM_VERT_TICK = 0;
 
 // Extender motor is go bilda and rotation motor is rev core hex (TPR =Ticks per rotation)
@@ -122,10 +122,13 @@ public class ArmController {
             setCurrentState(new GroundIntake());
             move();
         }
-
+        /*
         if  (gamepad2.a && gamepad2.left_bumper){
-            move(new WallIntake());
+            setCurrentState(new WallIntake());
+            move();
         }
+
+         */
 
 
         /*
@@ -189,17 +192,19 @@ public class ArmController {
     }
     public void manualExtension(Gamepad gamepad2) {
         double speedModifier = 1;
-        if (gamepad2.left_trigger > 0.15){
-            speedModifier = .5;
-        }
+
 
         if (Math.abs(gamepad2.left_stick_y) > .15) { //if stick is pressed far enough
             for (DcMotorEx motor : new DcMotorEx[]{robot.linearExtenderMotorL, robot.linearExtenderMotorR}) { //set extenders to run on power
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                if(robot.linearExtenderMotorL.getCurrentPosition()>20
-                        ||gamepad2.left_stick_y<0
-                        ||robot.linearExtenderMotorL.getCurrentPosition()<MAX_EXTEND) { //Don't break the slide
-                    motor.setPower(-gamepad2.left_stick_y * speedModifier); //power proportional to joystick
+                if((robot.linearExtenderMotorL.getCurrentPosition()>20
+                        &&gamepad2.left_stick_y<0)
+                        &&(robot.linearExtenderMotorL.getCurrentPosition()<MAX_EXTEND)||(robot.linearExtenderMotorR.getCurrentPosition()<MAX_EXTEND)) { //Don't break the slide
+                    if (gamepad2.left_trigger > 0.15){
+                        motor.setPower(-gamepad2.left_stick_y * 0.5); //power proportional to joystick;
+                    } else {
+                        motor.setPower(-gamepad2.left_stick_y); //power proportional to joystick;
+                    }
                 } else {
                     motor.setPower(0);
                 }
@@ -259,7 +264,7 @@ public class ArmController {
     //Implementing this is counter intuitive, as its not clear that passing a bool will make the claw open or close, maybe rename?
     public void moveClaw(boolean open){
         final double CLAW_OPEN_ANGLE = 0;
-        final double CLAW_CLOSED_ANGLE = 0.5; // TODO: 1/16/25 Measure and Mark
+        final double CLAW_CLOSED_ANGLE = 0.4; // TODO: 1/16/25 Measure and Mark
         if(open){
             moveClaw(CLAW_OPEN_ANGLE);
         } else {
