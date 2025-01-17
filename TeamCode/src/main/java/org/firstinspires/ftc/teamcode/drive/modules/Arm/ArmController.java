@@ -35,6 +35,8 @@ public class ArmController {
     private static final int MAX_EXTEND = 3500;
 
 
+    private static int FOREARM_HORIZ_TICK = 650;
+    private static int FOREARM_VERT_TICK = 0;
 
 // Extender motor is go bilda and rotation motor is rev core hex (TPR =Ticks per rotation)
 
@@ -196,11 +198,11 @@ public class ArmController {
      * @return Returns the number of ticks to move the motor
      */
 
-    public int angleToTicks(double theta, boolean isExtenderMotor) {
+    public double angleToTicks(double theta, boolean isExtenderMotor) {
         if (isExtenderMotor) {
-            return (int) (theta * EXTENDER_LSLIDE_MOTOR_TPR / 360);
+            return  (theta * EXTENDER_LSLIDE_MOTOR_TPR / 360);
         }
-        return (int) (theta * ROTATOR_MOTOR_TPR / 360);
+        return  (theta * ROTATOR_MOTOR_TPR / 360);
     }
 
 
@@ -215,8 +217,9 @@ public class ArmController {
     }
 
     public void moveWristToAngle(double wristAngle) {
-        final double WRIST_MAX_ANGLE = 180;
-        final double WRIST_MIN_ANGLE = 0;
+        final double WRIST_MAX_ANGLE = 135;
+        final double WRIST_MIN_ANGLE = -135;
+        final double  WRIST_0_OFFSET = 0; // TODO: 1/16/25 Measure and Mark
         robot.wristServo.setPosition(clamp(wristAngle, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE));
     }
 
@@ -241,18 +244,16 @@ public class ArmController {
 
 
 
-    public void rotateSlideToTick(int tick, int speed){
+    public void rotateSlide(int tick, double speed){
         // TODO: Measure actual values and mark after tests
-        final int FOREARM_HORIZ_TICK = 0;
-        final int FOREARM_VERT_TICK = 0;
         robot.armRotationMotorL.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
         robot.armRotationMotorR.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
         robot.armRotationMotorL.setPower(speed);
         robot.armRotationMotorR.setPower(speed);
     }
 
-    public void rotateSlideToAngle(double angle,int speed){
-        rotateSlideToTick(angleToTicks(angle,false),speed);
+    public void rotateSlide(boolean isVertical, double speed){
+        rotateSlide(isVertical ? FOREARM_HORIZ_TICK : FOREARM_VERT_TICK, speed);
     }
 
     public void extendSlideToTick(int tick, int speed){

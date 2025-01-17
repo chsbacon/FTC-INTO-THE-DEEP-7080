@@ -54,8 +54,8 @@ public class Robot2024 {
 
             armRotationMotorR = this.hardwareMap.get(DcMotorEx.class, "armRotationR");
             armRotationMotorL = this.hardwareMap.get(DcMotorEx.class, "armRotationL");
-            armRotationMotorR.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
-            armRotationMotorL.setDirection(DcMotorSimple.Direction.REVERSE); //Change after tests
+            armRotationMotorR.setDirection(DcMotorSimple.Direction.REVERSE); //Change after tests
+            armRotationMotorL.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
             // TODO: Set the direction of the motors they will most likely need adjustment as the motors are mounted in different directions
 
             wristServo = this.hardwareMap.get(Servo.class, "wrist"); //HW map declaration
