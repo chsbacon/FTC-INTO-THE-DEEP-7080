@@ -32,6 +32,8 @@ public class ArmController {
     private static final double ROTATOR_MOTOR_TPR = 1527.79; // Rev motor
 
 
+    private static int FOREARM_HORIZ_TICK = 650;
+    private static int FOREARM_VERT_TICK = 0;
 
 // Extender motor is go bilda and rotation motor is rev core hex (TPR =Ticks per rotation)
 
@@ -181,11 +183,11 @@ public class ArmController {
      * @return Returns the number of ticks to move the motor
      */
 
-    public int angleToTicks(double theta, boolean isExtenderMotor) {
+    public double angleToTicks(double theta, boolean isExtenderMotor) {
         if (isExtenderMotor) {
-            return (int) (theta * EXTENDER_LSLIDE_MOTOR_TPR / 360);
+            return  (theta * EXTENDER_LSLIDE_MOTOR_TPR / 360);
         }
-        return (int) (theta * ROTATOR_MOTOR_TPR / 360);
+        return  (theta * ROTATOR_MOTOR_TPR / 360);
     }
 
 
@@ -200,10 +202,13 @@ public class ArmController {
     }
 
     public void moveWristToAngle(double wristAngle) {
-        final double WRIST_MAX_ANGLE = 180;
-        final double WRIST_MIN_ANGLE = 0;
+        final double WRIST_MAX_ANGLE = 135;
+        final double WRIST_MIN_ANGLE = -135;
+        final double  WRIST_0_OFFSET = 0; // TODO: 1/16/25 Measure and Mark
         robot.wristServo.setPosition(clamp(wristAngle, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE));
     }
+
+
 
     public void moveClaw(int angle){
         final int CLAW_MAX_ANGLE = 0;
@@ -216,7 +221,7 @@ public class ArmController {
     //Implementing this is counter intuitive, as its not clear that passing a bool will make the claw open or close, maybe rename?
     public void moveClaw(boolean open){
         final int CLAW_OPEN_ANGLE = 0;
-        final int CLAW_CLOSED_ANGLE = 0; // TODO: 1/16/25 Measure and Mark
+        final int CLAW_CLOSED_ANGLE = 135; // TODO: 1/16/25 Measure and Mark
         if(open){
             moveClaw(CLAW_OPEN_ANGLE);
         } else {
@@ -226,21 +231,20 @@ public class ArmController {
 
 
 
-    public void rotateSlideToTick(int tick, int speed){
+    public void rotateSlide(int tick, double speed){
         // TODO: Measure actual values and mark after tests
-        final int FOREARM_HORIZ_TICK = 0;
-        final int FOREARM_VERT_TICK = 0;
         robot.armRotationMotorL.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
         robot.armRotationMotorR.setTargetPosition((int) clamp(tick, FOREARM_HORIZ_TICK, FOREARM_VERT_TICK));
         robot.armRotationMotorL.setPower(speed);
         robot.armRotationMotorR.setPower(speed);
     }
 
-    public void rotateSlideToAngle(double angle,int speed){
-        rotateSlideToTick(angleToTicks(angle,false),speed);
+    public void rotateSlide(boolean isVertical, double speed){
+        rotateSlide(isVertical ? FOREARM_HORIZ_TICK : FOREARM_VERT_TICK, speed);
     }
 
-    public void extendSlideToTick(int tick, int speed){
+
+    public void extendSlideToTick(int tick, double speed){
         final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 0;
         final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = 0; // TODO: Get the right max value
 
@@ -250,9 +254,6 @@ public class ArmController {
         robot.linearExtenderMotorR.setPower(speed);
     }
 
-    public void extendSlideToAngle(double angle, int speed){
-        extendSlideToTick(angleToTicks(angle,true),speed);
-    }
 
     private double clamp(double val, double min, double max){
         return Math.max(min, Math.min(max, val));
