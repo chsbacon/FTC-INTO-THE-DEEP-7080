@@ -20,6 +20,7 @@ public class ArmController {
     private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private boolean inDebugMode = false;
     private ArmState currentState;
+    private boolean prevTrigger=false;
 
 
 
@@ -30,6 +31,8 @@ public class ArmController {
 
     private static final double EXTENDER_LSLIDE_MOTOR_TPR = 537.7; // go bilda
     private static final double ROTATOR_MOTOR_TPR = 1527.79; // Rev motor
+
+    private static final int MAX_EXTEND = 3500;
 
 
 
@@ -60,15 +63,16 @@ public class ArmController {
         telemetry.addData("Extender Motor R", robot.linearExtenderMotorR.getCurrentPosition());
         telemetry.addData("Rotator Motor L", robot.armRotationMotorL.getCurrentPosition());
         telemetry.addData("Rotator Motor R", robot.armRotationMotorR.getCurrentPosition());
-        telemetry.addData("Wrist Position", robot.wristServo.getPosition());
+        telemetry.addData("Twist Position", robot.twistServo.getPosition());
+        telemetry.update();
 
-        if (gamepad2.right_trigger >= 0.5) {
+        if (gamepad2.right_bumper) {
             moveClaw(true);
         }
-        else if (gamepad2.left_trigger >= 0.5) {
+        else if (gamepad2.left_bumper) {
             moveClaw(false);
         }
-
+/*
         if (gamepad2.right_bumper) {
             moveWristToAngle(0);
         }
@@ -76,22 +80,24 @@ public class ArmController {
             moveWristToAngle(0);
         }
 
+ */
+
         double wristTargetPosition = robot.wristServo.getPosition();
         if (gamepad2.dpad_up) {
-            wristTargetPosition += 10;
+            wristTargetPosition += 1.0/270; //1 degree?
         }
         else if (gamepad2.dpad_down) {
-            wristTargetPosition -= 10;
+            wristTargetPosition -= 1.0/270;
         }
         robot.wristServo.setPosition(wristTargetPosition);
 
         double twistTargetPosition = robot.twistServo.getPosition();
-        twistTargetPosition += gamepad1.left_stick_x;
+        twistTargetPosition += gamepad2.right_stick_x/100;
         robot.twistServo.setPosition(twistTargetPosition);
 
         double slideTargetPosition = robot.linearExtenderMotorL.getCurrentPosition();
         slideTargetPosition += gamepad1.right_stick_y;
-
+        manualExtension(gamepad2);
         if (gamepad2.b) {
          setCurrentState(new Neutral());
         }
@@ -151,10 +157,10 @@ public class ArmController {
 
     public void manualRotation(Gamepad gamepad2) {
         int newTargetPosition=robot.armRotationMotorL.getCurrentPosition();
-        if(gamepad2.a) {
-            newTargetPosition+=10;
-        } else if(gamepad2.b) {
-            newTargetPosition-=10;
+        if(gamepad2.a&&gamepad2.right_bumper) {
+            newTargetPosition+=60;
+        } else if(gamepad2.b&&gamepad2.right_bumper) {
+            newTargetPosition-=60;
         }
         robot.armRotationMotorL.setTargetPosition(newTargetPosition);
         robot.armRotationMotorR.setTargetPosition(newTargetPosition);
@@ -163,14 +169,23 @@ public class ArmController {
         if (Math.abs(gamepad2.left_stick_y) > .15) { //if stick is pressed far enough
             for (DcMotorEx motor : new DcMotorEx[]{robot.linearExtenderMotorL, robot.linearExtenderMotorR}) { //set extenders to run on power
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                motor.setPower(gamepad2.left_stick_y); //power proportional to joystick
+                if(robot.linearExtenderMotorL.getCurrentPosition()>20
+                        ||gamepad2.left_stick_y<0
+                        ||robot.linearExtenderMotorL.getCurrentPosition()<MAX_EXTEND) { //Don't break the slide
+                    motor.setPower(-gamepad2.left_stick_y); //power proportional to joystick
+                } else {
+                    motor.setPower(0);
+                }
             }
-        } else { //if stick is not pressed enough
+            prevTrigger=true;
+        } else if(prevTrigger&&Math.abs(gamepad2.left_stick_y) < .15){ //if stick is not pressed enough
             for(DcMotorEx motor: new DcMotorEx[]{robot.linearExtenderMotorL,robot.linearExtenderMotorR}){ //reset extenders to run by encoder
                 motor.setTargetPosition(robot.linearExtenderMotorL.getCurrentPosition());
                 motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motor.setPower(0.5);
+                motor.setTargetPosition(robot.linearExtenderMotorL.getCurrentPosition());
             }
+            prevTrigger=false;
         }
     }
 
@@ -205,18 +220,18 @@ public class ArmController {
         robot.wristServo.setPosition(clamp(wristAngle, WRIST_MIN_ANGLE, WRIST_MAX_ANGLE));
     }
 
-    public void moveClaw(int angle){
-        final int CLAW_MAX_ANGLE = 0;
-        final int CLAW_MIN_ANGLE = 0;
+    public void moveClaw(double angle){
+        final double CLAW_MAX_ANGLE = 1;
+        final double CLAW_MIN_ANGLE = 0;
         // TODO: 1/16/25 Measure values
-        robot.clawServo.setPosition(mapRange(clamp(angle,CLAW_MIN_ANGLE,CLAW_MAX_ANGLE),0,180,0,1));
+        robot.clawServo.setPosition(angle);
     }
 
 
     //Implementing this is counter intuitive, as its not clear that passing a bool will make the claw open or close, maybe rename?
     public void moveClaw(boolean open){
-        final int CLAW_OPEN_ANGLE = 0;
-        final int CLAW_CLOSED_ANGLE = 0; // TODO: 1/16/25 Measure and Mark
+        final double CLAW_OPEN_ANGLE = 0;
+        final double CLAW_CLOSED_ANGLE = 0.5; // TODO: 1/16/25 Measure and Mark
         if(open){
             moveClaw(CLAW_OPEN_ANGLE);
         } else {
@@ -241,8 +256,8 @@ public class ArmController {
     }
 
     public void extendSlideToTick(int tick, int speed){
-        final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 0;
-        final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = 0; // TODO: Get the right max value
+        final int EXTENDER_LSLIDE_MOTOR_MIN_TICK = 20;
+        final int EXTENDER_LSLIDE_MOTOR_MAX_TICK = MAX_EXTEND; // TODO: Get the right max value
 
         robot.linearExtenderMotorL.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
         robot.linearExtenderMotorR.setTargetPosition((int)clamp(tick, EXTENDER_LSLIDE_MOTOR_MIN_TICK, EXTENDER_LSLIDE_MOTOR_MAX_TICK));
@@ -253,7 +268,6 @@ public class ArmController {
     public void extendSlideToAngle(double angle, int speed){
         extendSlideToTick(angleToTicks(angle,true),speed);
     }
-
     private double clamp(double val, double min, double max){
         return Math.max(min, Math.min(max, val));
     }

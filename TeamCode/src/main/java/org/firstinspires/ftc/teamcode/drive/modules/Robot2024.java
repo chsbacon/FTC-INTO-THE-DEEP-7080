@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.modules;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -44,9 +45,11 @@ public class Robot2024 {
 
             linearExtenderMotorL = this.hardwareMap.get(DcMotorEx.class, "linearExtenderL"); //HW map declaration
             linearExtenderMotorL.setDirection(DcMotorSimple.Direction.FORWARD); //Change after tests
+            linearExtenderMotorL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             linearExtenderMotorR = this.hardwareMap.get(DcMotorEx.class, "linearExtenderR"); //HW map declaration
             linearExtenderMotorR.setDirection(DcMotorSimple.Direction.REVERSE); //Change after tests
+            linearExtenderMotorR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
             armRotationMotorR = this.hardwareMap.get(DcMotorEx.class, "armRotationR");
