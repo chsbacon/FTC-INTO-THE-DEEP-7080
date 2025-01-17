@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.modules;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -20,11 +19,11 @@ public class Robot2024 {
     public DriveController driveController = null;
     public DcMotorEx linearExtenderMotorL;
     public DcMotorEx linearExtenderMotorR;
-    public DcMotorEx forearmEncoder;
     public DcMotorEx armRotationMotorR;
     public DcMotorEx armRotationMotorL; // TODO: 1/14/25 Add arm rotation motor(L&R) and wrist servo to hardware map
     public Servo wristServo;
     public Servo clawServo;
+    public Servo twistServo;
     public ArmController armController = null;
     public boolean doAuto = false;
     MecanumDrive2024 drive;
@@ -57,7 +56,7 @@ public class Robot2024 {
             // TODO: Set the direction of the motors they will most likely need adjustment as the motors are mounted in different directions
 
             wristServo = this.hardwareMap.get(Servo.class, "wrist"); //HW map declaration
-
+            twistServo = this.hardwareMap.get(Servo.class, "twistServo"); //HW map declaration
             clawServo = this.hardwareMap.get(Servo.class, "claw"); //HW map declaration
         }
         if (doAuto) {

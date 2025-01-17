@@ -29,7 +29,7 @@ public class ArmController {
     // Motor consts
 
     private static final double EXTENDER_LSLIDE_MOTOR_TPR = 537.7; // go bilda
-    private static final double ROTATOR_MOTOR_TPR = 528.64; // Rev motor
+    private static final double ROTATOR_MOTOR_TPR = 1527.79; // Rev motor
 
 
 
@@ -61,6 +61,55 @@ public class ArmController {
         telemetry.addData("Rotator Motor L", robot.armRotationMotorL.getCurrentPosition());
         telemetry.addData("Rotator Motor R", robot.armRotationMotorR.getCurrentPosition());
         telemetry.addData("Wrist Position", robot.wristServo.getPosition());
+
+        if (gamepad2.right_trigger >= 0.5) {
+            moveClaw(true);
+        }
+        else if (gamepad2.left_trigger >= 0.5) {
+            moveClaw(false);
+        }
+
+        if (gamepad2.right_bumper) {
+            moveWristToAngle(0);
+        }
+        else if (gamepad2.left_bumper) {
+            moveWristToAngle(0);
+        }
+
+        double wristTargetPosition = robot.wristServo.getPosition();
+        if (gamepad2.dpad_up) {
+            wristTargetPosition += 10;
+        }
+        else if (gamepad2.dpad_down) {
+            wristTargetPosition -= 10;
+        }
+        robot.wristServo.setPosition(wristTargetPosition);
+
+        double twistTargetPosition = robot.twistServo.getPosition();
+        twistTargetPosition += gamepad1.left_stick_x;
+        robot.twistServo.setPosition(twistTargetPosition);
+
+        double slideTargetPosition = robot.linearExtenderMotorL.getCurrentPosition();
+        slideTargetPosition += gamepad1.right_stick_y;
+
+        if (gamepad2.b) {
+         setCurrentState(new Neutral());
+        }
+        else if (gamepad2.y) {
+            setCurrentState(new UpperBucketDeposit());
+        }
+        else if (gamepad2.x) {
+            setCurrentState(new HighChamberDeposit());
+        }
+        else if (gamepad2.a) {
+            setCurrentState(new GroundIntake());
+        }
+        /*
+
+        - implement things from MD file here
+
+         */
+
         loopTimer.reset();
     }
 
@@ -84,6 +133,15 @@ public class ArmController {
     public void debugDoLoop(Gamepad gamepad1, Gamepad gamepad2){
         manualRotation(gamepad2);
         manualExtension(gamepad2);
+
+        telemetry.addData("Extender Motor L", robot.linearExtenderMotorL.getCurrentPosition());
+        telemetry.addData("Extender Motor R", robot.linearExtenderMotorR.getCurrentPosition());
+        telemetry.addData("Rotator Motor L", robot.armRotationMotorL.getCurrentPosition());
+        telemetry.addData("Rotator Motor R", robot.armRotationMotorR.getCurrentPosition());
+        telemetry.addData("Wrist Position", robot.wristServo.getPosition());
+        telemetry.update();
+
+
         // TODO: 1/16/25 implement manual controls
     }
 
@@ -130,18 +188,7 @@ public class ArmController {
         return (int) (theta * ROTATOR_MOTOR_TPR / 360);
     }
 
-    @Deprecated
-    public void goToForearm(double targetAngle, double rate) { //Assumes 0 is set to vertical arm position
 
-//        if(angleToTicks(targetAngle,true) > robot.forearmEncoder.getCurrentPosition()) { //if target is ahead of current
-//            robot.forearmServoL.setPower(rate);
-//            robot.forearmServoR.setPower(rate);
-//        } else {
-//            robot.forearmServoL.setPower(-rate);
-//            robot.forearmServoR.setPower(-rate);
-//        }
-        throw new UnsupportedOperationException("This method is deprecated");
-    }
 
 
 
@@ -207,6 +254,15 @@ public class ArmController {
         extendSlideToTick(angleToTicks(angle,true),speed);
     }
 
+    private double clamp(double val, double min, double max){
+        return Math.max(min, Math.min(max, val));
+    }
+
+    //straight rip from arduino
+    private double mapRange(double x, double in_min, double in_max, double out_min, double out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
     @Deprecated
     public void goToLinear(int newTargetPosition, double speed) {
 
@@ -237,14 +293,20 @@ public class ArmController {
         throw new UnsupportedOperationException("This method is deprecated");
     }
 
-    private double clamp(double val, double min, double max){
-        return Math.max(min, Math.min(max, val));
+    @Deprecated
+    public void goToForearm(double targetAngle, double rate) { //Assumes 0 is set to vertical arm position
+
+//        if(angleToTicks(targetAngle,true) > robot.forearmEncoder.getCurrentPosition()) { //if target is ahead of current
+//            robot.forearmServoL.setPower(rate);
+//            robot.forearmServoR.setPower(rate);
+//        } else {
+//            robot.forearmServoL.setPower(-rate);
+//            robot.forearmServoR.setPower(-rate);
+//        }
+        throw new UnsupportedOperationException("This method is deprecated");
     }
 
-    //straight rip from arduino
-    private double mapRange(double x, double in_min, double in_max, double out_min, double out_max) {
-        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-    }
+
 
 }
 
